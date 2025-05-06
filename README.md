@@ -2,6 +2,13 @@
 
 A tool for testing prompts and generations with Ragie. This is a Next.js application that allows you to experiment with AI text generation using the Ragie knowledge retrieval system and Anthropic's Claude AI.
 
+<img width="302" alt="image" src="https://github.com/user-attachments/assets/920b33fb-4f07-44bb-b6bb-d266c0857d60" />
+<img width="302" alt="image" src="https://github.com/user-attachments/assets/29e99518-45be-4214-a48a-4d06440d00b7" />
+<img width="302" alt="image" src="https://github.com/user-attachments/assets/e19f0ce5-64f8-4e62-bf1a-7406be16e23e" />
+
+
+
+
 ## Features
 
 - Interactive prompt testing interface
