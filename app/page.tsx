@@ -1,103 +1,201 @@
-import Image from "next/image";
+"use client";
+
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { useEffect, useState } from "react";
+
+
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { z } from "zod";
+import GeneratedText from "./generated-text";
+import { DEFAULT_SYSTEM_PROMPT } from "../lib/prompts";
+import { completionSchema } from "../lib/types";
 
 export default function Home() {
-  return (
-    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-      <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="list-inside list-decimal text-sm/6 text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
-          <li className="mb-2 tracking-[-.01em]">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] px-1 py-0.5 rounded font-[family-name:var(--font-geist-mono)] font-semibold">
-              app/page.tsx
-            </code>
-            .
-          </li>
-          <li className="tracking-[-.01em]">
-            Save and see your changes instantly.
-          </li>
-        </ol>
+  const [completion, setCompletion] = useState<null | z.infer<typeof completionSchema>>(null);
+  const [systemPrompt, setSystemPrompt] = useState<string>(DEFAULT_SYSTEM_PROMPT);
+  const [partition, setPartition] = useState<string>("default");
+  const [topK, setTopK] = useState<number>(6);
+  const [rerank, setRerank] = useState<boolean>(false);
+  const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [open, setOpen] = useState<boolean>(false);
+  const [message, setMessage] = useState<string>("");
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:w-auto"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 w-full sm:w-auto md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
-        </div>
-      </main>
-      <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
-    </div>
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+
+    setIsLoading(true);
+
+    const response = await fetch("/api/completions", {
+      method: "POST",
+      body: JSON.stringify({ systemPrompt, message, partition, topK, rerank }),
+    });
+
+    try {
+      const json = await response.json();
+      const completion = completionSchema.parse(json)
+      setCompletion(completion)
+    } catch (error) {
+      console.error(error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleSystemPromptSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+
+    const formData = new FormData(e.currentTarget);
+    const systemPrompt = z.string().parse(formData.get("systemPrompt"));
+
+    setSystemPrompt(systemPrompt);
+    localStorage.setItem("systemPrompt", systemPrompt);
+    setOpen(false);
+  };
+
+  const handleMessageChange = (value: string) => {
+    setMessage(value);
+    localStorage.setItem("message", value);
+  };
+
+  const handlePartitionChange = (value: string) => {
+    setPartition(value);
+    localStorage.setItem("partition", value);
+  };
+
+  const handleTopKChange = (value: string) => {
+    setTopK(parseInt(value));
+    localStorage.setItem("topK", value);
+  };
+
+  const handleRerankChange = (value: boolean) => {
+    setRerank(value);
+    localStorage.setItem("rerank", value.toString());
+  };
+
+  useEffect(() => {
+    const savedSystemPrompt = localStorage.getItem("systemPrompt");
+    if (savedSystemPrompt) {
+      setSystemPrompt(savedSystemPrompt);
+    }
+    const savedMessage = localStorage.getItem("message");
+    if (savedMessage) {
+      setMessage(savedMessage);
+    }
+    const savedPartition = localStorage.getItem("partition");
+    if (savedPartition) {
+      setPartition(savedPartition);
+    }
+    const savedTopK = localStorage.getItem("topK");
+    if (savedTopK) {
+      setTopK(parseInt(savedTopK));
+    }
+    const savedRerank = localStorage.getItem("rerank");
+    if (savedRerank) {
+      setRerank(savedRerank === "true");
+    }
+  }, []);
+
+  return (
+    <div className="flex flex-col max-w-4xl mx-auto h-full p-4">
+      <header className="flex items-center justify-between pb-4">
+          <div className="flex flex-col">
+            <h1 className="text-2xl font-bold">Promptie</h1>
+            <p className="text-sm text-gray-500">
+              A tool for testing prompts and generations with Ragie
+            </p>
+          </div>
+          <div className="flex flex-col">
+            <p className="text-sm text-gray-500">
+              <Dialog open={open} onOpenChange={setOpen}>
+                <DialogTrigger onClick={() => setOpen(true)}>Edit system prompt</DialogTrigger>
+                <DialogContent>
+                  <DialogTitle>Edit system prompt</DialogTitle>
+                  <DialogDescription className="flex items-center justify-between">
+                    Edit the system prompt for the Promptie.
+                    <button className="text-blue-500">Reset</button>
+                  </DialogDescription>
+                  <form onSubmit={handleSystemPromptSubmit}>
+                    <textarea
+                      name="systemPrompt"
+                      className="w-full h-[600px] p-2 border-1 border-gray-300 rounded-md mb-4"
+                      defaultValue={systemPrompt}
+                    />
+                    <DialogFooter>
+                      <button className="text-gray-500 rounded-md p-2">Cancel</button>
+                      <button className="bg-blue-500 text-white rounded-md p-2 px-6" type="submit">Save</button>
+                    </DialogFooter>
+                  </form>
+                </DialogContent>
+              </Dialog>
+            </p>
+          </div>
+        </header>
+        <main className="flex flex-col w-full h-full">
+          <form onSubmit={handleSubmit} className="w-full flex gap-2 pb-4">
+            <div className="flex-1 flex flex-col">
+              <input
+                type="text"
+                placeholder="Enter message"
+                className="border-1 border-gray-300 rounded-md p-2 w-full"
+                name="message"
+                value={message}
+                onChange={(e) => handleMessageChange(e.target.value)}
+              />
+              <div className="flex gap-10 pt-2">
+                <div className="flex items-center gap-2">
+                  <label htmlFor="partition">Partition:</label>
+                  <input
+                    type="text"
+                    name="partition"
+                    className="border-1 border-gray-300 rounded-md p-2"
+                    value={partition}
+                    onChange={(e) => handlePartitionChange(e.target.value)}
+                  />
+                </div>
+                <div className="flex items-center gap-2">
+                  <label htmlFor="topK">Top K:</label>
+                  <input
+                    type="number"
+                    name="topK"
+                    className="border-1 border-gray-300 rounded-md p-2"
+                    value={topK}
+                    onChange={(e) => handleTopKChange(e.target.value)}
+                  />
+                </div>
+                <div className="flex items-center gap-2">
+                  <label htmlFor="rerank">Rerank:</label>
+                  <input
+                    type="checkbox"
+                    name="rerank"
+                    className="border-1 border-gray-300 rounded-md p-2"
+                    checked={rerank}
+                    onChange={(e) => handleRerankChange(e.target.checked)}
+                  />
+                </div>
+              </div>
+            </div>
+            <button
+              type="submit"
+              className="bg-blue-500 text-white rounded-md p-2 px-6 self-start">
+                Send
+            </button>
+          </form>
+          {!completion && !isLoading && (
+            <div className="flex flex-col h-full mt-8">
+              <p>No completion yet. Send a message to get started.</p>
+            </div>
+          )}
+          {isLoading && (
+            <div className="flex flex-col h-full mt-8 items-center justify-center">
+              <div className="flex flex-col items-center">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500 mb-2"></div>
+              </div>
+            </div>
+          )}
+          {completion && !isLoading && (
+            <GeneratedText completion={completion} partition={partition} />
+          )}
+        </main>
+      </div>
   );
 }
