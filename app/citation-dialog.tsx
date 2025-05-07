@@ -3,7 +3,6 @@ import { Citation } from "../lib/types";
 import { useEffect, useState } from "react";
 import { z } from "zod";
 import Markdown from "react-markdown";
-import { format } from "date-fns";
 
 import { getProxyPath } from "@/lib/utils";
 
