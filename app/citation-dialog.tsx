@@ -1,10 +1,10 @@
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
-import { Citation } from "../lib/types";
 import { useEffect, useState } from "react";
-import { z } from "zod";
 import Markdown from "react-markdown";
+import { z } from "zod";
+import { Citation } from "../lib/types";
 
-import { getProxyPath } from "@/lib/utils";
+import { formatSeconds, getProxyPath, getStreamType } from "@/lib/utils";
 
 interface CitationDialogProps {
   citation: Citation;
@@ -17,18 +17,6 @@ const summarySchema = z.object({
   documentId: z.string(),
   summary: z.string(),
 });
-
-function formatSeconds(totalSeconds: number): string {
-  const hours = Math.floor(totalSeconds / 3600);
-  const minutes = Math.floor((totalSeconds % 3600) / 60);
-  const seconds = Math.floor(totalSeconds % 60);
-
-  const pad = (n: number): string => n.toString().padStart(2, "0");
-
-  return hours > 0
-    ? `${pad(hours)}:${pad(minutes)}:${pad(seconds)}`
-    : `${pad(minutes)}:${pad(seconds)}`;
-}
 
 export default function CitationDialog({
   citation,
@@ -59,11 +47,7 @@ export default function CitationDialog({
     })();
   }, [chunk]);
 
-  const streamType  = chunk.links.self_video_stream
-    ? "video"
-    : chunk.links.self_audio_stream
-    ? "audio"
-    : null;
+  const streamType = getStreamType(chunk);
 
   return (
     <Dialog open={true} onOpenChange={handleOpenChange}>
