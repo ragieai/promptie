@@ -205,7 +205,28 @@ export default function Home() {
             </div>
           )}
           {completion && !isLoading && (
-            <GeneratedText completion={completion} partition={partition} />
+            <Tabs defaultValue="message" className="flex flex-col h-full mt-8">
+              <TabsList className="w-full justify-start bg-transparent gap-2">
+                <TabsTrigger
+                  value="message"
+                >
+                  Message
+                </TabsTrigger>
+                <TabsTrigger
+                  value="chunks"
+                >
+                  Chunks
+                </TabsTrigger>
+              </TabsList>
+              <TabsContent value="message" className="flex-1">
+                <GeneratedText completion={completion} partition={partition} />
+              </TabsContent>
+              <TabsContent value="chunks" className="flex-1 whitespace-pre-wrap">
+                <pre className="flex flex-col gap-2 whitespace-pre-wrap text-xs">
+                  {JSON.stringify(completion.retrievalResponse, null, 2)}
+                </pre>
+              </TabsContent>
+            </Tabs>
           )}
         </main>
       </div>
