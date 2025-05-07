@@ -3,16 +3,16 @@ import { Citation } from "../lib/types";
 import { useEffect, useState } from "react";
 import { z } from "zod";
 import Markdown from "react-markdown";
-import { format } from 'date-fns';
+import { format } from "date-fns";
 
 import { getProxyPath } from "@/lib/utils";
 
 interface CitationDialogProps {
-  citation: Citation,
-  chunk: any,
-  onClose?: () => void,
-  partition: string,
-};
+  citation: Citation;
+  chunk: any;
+  onClose?: () => void;
+  partition: string;
+}
 
 const summarySchema = z.object({
   documentId: z.string(),
@@ -26,15 +26,24 @@ function formatSeconds(totalSeconds: number): string {
 
   const pad = (n: number): string => n.toString().padStart(2, "0");
 
-  return hours > 0 ? `${pad(hours)}:${pad(minutes)}:${pad(seconds)}` : `${pad(minutes)}:${pad(seconds)}`;
+  return hours > 0
+    ? `${pad(hours)}:${pad(minutes)}:${pad(seconds)}`
+    : `${pad(minutes)}:${pad(seconds)}`;
 }
 
-export default function CitationDialog({ citation, chunk, partition, onClose = () => {} }: CitationDialogProps) {
+export default function CitationDialog({
+  citation,
+  chunk,
+  partition,
+  onClose = () => {},
+}: CitationDialogProps) {
   const [summary, setSummary] = useState<any | null>(null);
 
   const handleOpenChange = (open: boolean) => {
-    if (!open) { onClose(); }
-  }
+    if (!open) {
+      onClose();
+    }
+  };
 
   useEffect(() => {
     (async () => {
@@ -59,10 +68,19 @@ export default function CitationDialog({ citation, chunk, partition, onClose = (
           <div className="flex flex-col gap-2">
             <div className="flex justify-between items-center">
               <h2 className="font-bold">Audio</h2>
-              <div className="text-sm text-gray-500">({formatSeconds(chunk.metadata.start_time)} - {formatSeconds(chunk.metadata.end_time)})</div>
+              <div className="text-sm text-gray-500">
+                ({formatSeconds(chunk.metadata.start_time)} -{" "}
+                {formatSeconds(chunk.metadata.end_time)})
+              </div>
             </div>
             <div className="flex justify-center">
-              <audio src={getProxyPath(partition, chunk.links.self_audio_stream.href)} controls />
+              <audio
+                src={getProxyPath(
+                  partition,
+                  chunk.links.self_audio_stream.href
+                )}
+                controls
+              />
             </div>
           </div>
         )}
@@ -73,4 +91,5 @@ export default function CitationDialog({ citation, chunk, partition, onClose = (
         </div>
       </DialogContent>
     </Dialog>
-  )
+  );
+}

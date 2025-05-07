@@ -16,6 +16,7 @@
     "ai": "^4.3.13",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
+    "date-fns": "^4.1.0",
     "handlebars": "^4.7.8",
     "lucide-react": "^0.507.0",
     "next": "15.3.1",
