@@ -9,6 +9,7 @@ import { z } from "zod";
 import GeneratedText from "./generated-text";
 import { DEFAULT_SYSTEM_PROMPT } from "../lib/prompts";
 import { completionSchema } from "../lib/types";
+import Link from "next/link";
 
 export default function Home() {
   const [completion, setCompletion] = useState<null | z.infer<typeof completionSchema>>(null);
@@ -105,18 +106,51 @@ export default function Home() {
   }, []);
 
   return (
-    <div className="flex flex-col max-w-4xl mx-auto h-full p-4">
-      <header className="flex items-center justify-between pb-4">
-          <div className="flex flex-col">
-            <h1 className="text-2xl font-bold">Promptie</h1>
-            <p className="text-sm text-gray-500">
-              A tool for testing prompts and generations with Ragie
-            </p>
-          </div>
-          <div className="flex flex-col">
-            <p className="text-sm text-gray-500">
+    <>
+      <form onSubmit={handleSubmit} className="w-full flex gap-2 pb-4">
+        <div className="flex-1 flex flex-col">
+          <input
+            type="text"
+            placeholder="Enter message"
+            className="border-1 border-gray-300 rounded-md p-2 w-full"
+            name="message"
+            value={message}
+            onChange={(e) => handleMessageChange(e.target.value)}
+          />
+          <div className="flex gap-10 pt-2 justify-between">
+            <div className="text-sm flex items-center gap-2">
+              <label htmlFor="partition">Partition:</label>
+              <input
+                type="text"
+                name="partition"
+                className="border-1 border-gray-300 rounded-md p-2"
+                value={partition}
+                onChange={(e) => handlePartitionChange(e.target.value)}
+              />
+            </div>
+            <div className="text-sm flex items-center gap-2">
+              <label htmlFor="topK">Top K:</label>
+              <input
+                type="number"
+                name="topK"
+                className="border-1 border-gray-300 rounded-md p-2"
+                value={topK}
+                onChange={(e) => handleTopKChange(e.target.value)}
+              />
+            </div>
+            <div className="text-sm flex items-center gap-2">
+              <label htmlFor="rerank">Rerank:</label>
+              <input
+                type="checkbox"
+                name="rerank"
+                className="border-1 border-gray-300 rounded-md p-2"
+                checked={rerank}
+                onChange={(e) => handleRerankChange(e.target.checked)}
+              />
+            </div>
+            <div className="text-sm text-gray-500 flex items-center gap-2">
               <Dialog open={open} onOpenChange={handleOpenChange}>
-                <DialogTrigger>Edit system prompt</DialogTrigger>
+                <DialogTrigger>Edit prompt</DialogTrigger>
                 <DialogContent>
                   <DialogTitle>Edit system prompt</DialogTitle>
                   <DialogDescription className="flex items-center justify-between">
@@ -139,96 +173,51 @@ export default function Home() {
                   </form>
                 </DialogContent>
               </Dialog>
-            </p>
+            </div>
           </div>
-        </header>
-        <main className="flex flex-col w-full h-full">
-          <form onSubmit={handleSubmit} className="w-full flex gap-2 pb-4">
-            <div className="flex-1 flex flex-col">
-              <input
-                type="text"
-                placeholder="Enter message"
-                className="border-1 border-gray-300 rounded-md p-2 w-full"
-                name="message"
-                value={message}
-                onChange={(e) => handleMessageChange(e.target.value)}
-              />
-              <div className="flex gap-10 pt-2">
-                <div className="flex items-center gap-2">
-                  <label htmlFor="partition">Partition:</label>
-                  <input
-                    type="text"
-                    name="partition"
-                    className="border-1 border-gray-300 rounded-md p-2"
-                    value={partition}
-                    onChange={(e) => handlePartitionChange(e.target.value)}
-                  />
-                </div>
-                <div className="flex items-center gap-2">
-                  <label htmlFor="topK">Top K:</label>
-                  <input
-                    type="number"
-                    name="topK"
-                    className="border-1 border-gray-300 rounded-md p-2"
-                    value={topK}
-                    onChange={(e) => handleTopKChange(e.target.value)}
-                  />
-                </div>
-                <div className="flex items-center gap-2">
-                  <label htmlFor="rerank">Rerank:</label>
-                  <input
-                    type="checkbox"
-                    name="rerank"
-                    className="border-1 border-gray-300 rounded-md p-2"
-                    checked={rerank}
-                    onChange={(e) => handleRerankChange(e.target.checked)}
-                  />
-                </div>
-              </div>
-            </div>
-            <button
-              type="submit"
-              className="bg-blue-500 text-white rounded-md p-2 px-6 self-start">
-                Send
-            </button>
-          </form>
-          {!completion && !isLoading && (
-            <div className="flex flex-col h-full mt-8">
-              <p>No completion yet. Send a message to get started.</p>
-            </div>
-          )}
-          {isLoading && (
-            <div className="flex flex-col h-full mt-8 items-center justify-center">
-              <div className="flex flex-col items-center">
-                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500 mb-2"></div>
-              </div>
-            </div>
-          )}
-          {completion && !isLoading && (
-            <Tabs defaultValue="message" className="flex flex-col h-full mt-8">
-              <TabsList className="w-full justify-start bg-transparent gap-2">
-                <TabsTrigger
-                  value="message"
-                >
-                  Message
-                </TabsTrigger>
-                <TabsTrigger
-                  value="chunks"
-                >
-                  Chunks
-                </TabsTrigger>
-              </TabsList>
-              <TabsContent value="message" className="flex-1">
-                <GeneratedText completion={completion} partition={partition} />
-              </TabsContent>
-              <TabsContent value="chunks" className="flex-1 whitespace-pre-wrap">
-                <pre className="flex flex-col gap-2 whitespace-pre-wrap text-xs">
-                  {JSON.stringify(completion.retrievalResponse, null, 2)}
-                </pre>
-              </TabsContent>
-            </Tabs>
-          )}
-        </main>
-      </div>
+        </div>
+        <button
+          type="submit"
+          className="bg-blue-500 text-white rounded-md p-2 px-6 self-start">
+            Send
+        </button>
+      </form>
+      {!completion && !isLoading && (
+        <div className="flex flex-col h-full mt-8">
+          <p>No completion yet. Send a message to get started.</p>
+        </div>
+      )}
+      {isLoading && (
+        <div className="flex flex-col h-full mt-8 items-center justify-center">
+          <div className="flex flex-col items-center">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500 mb-2"></div>
+          </div>
+        </div>
+      )}
+      {completion && !isLoading && (
+        <Tabs defaultValue="message" className="flex flex-col h-full mt-8">
+          <TabsList className="w-full justify-start bg-transparent gap-2">
+            <TabsTrigger
+              value="message"
+            >
+              Message
+            </TabsTrigger>
+            <TabsTrigger
+              value="chunks"
+            >
+              Chunks
+            </TabsTrigger>
+          </TabsList>
+          <TabsContent value="message" className="flex-1">
+            <GeneratedText completion={completion} partition={partition} />
+          </TabsContent>
+          <TabsContent value="chunks" className="flex-1 whitespace-pre-wrap">
+            <pre className="flex flex-col gap-2 whitespace-pre-wrap text-xs">
+              {JSON.stringify(completion.retrievalResponse, null, 2)}
+            </pre>
+          </TabsContent>
+        </Tabs>
+      )}
+    </>
   );
 }
