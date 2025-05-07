@@ -1,6 +1,6 @@
 "use client";
 
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { useEffect, useState } from "react";
 
 
@@ -13,6 +13,7 @@ import { completionSchema } from "../lib/types";
 export default function Home() {
   const [completion, setCompletion] = useState<null | z.infer<typeof completionSchema>>(null);
   const [systemPrompt, setSystemPrompt] = useState<string>(DEFAULT_SYSTEM_PROMPT);
+  const [pendingSystemPrompt, setPendingSystemPrompt] = useState<string>(systemPrompt);
   const [partition, setPartition] = useState<string>("default");
   const [topK, setTopK] = useState<number>(6);
   const [rerank, setRerank] = useState<boolean>(false);
@@ -44,12 +45,16 @@ export default function Home() {
   const handleSystemPromptSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
-    const formData = new FormData(e.currentTarget);
-    const systemPrompt = z.string().parse(formData.get("systemPrompt"));
-
-    setSystemPrompt(systemPrompt);
-    localStorage.setItem("systemPrompt", systemPrompt);
+    setSystemPrompt(pendingSystemPrompt);
+    localStorage.setItem("systemPrompt", pendingSystemPrompt);
     setOpen(false);
+  };
+
+  const handleOpenChange = (open: boolean) => {
+    setOpen(open);
+    if (open) {
+      setPendingSystemPrompt(systemPrompt);
+    }
   };
 
   const handleMessageChange = (value: string) => {
@@ -70,6 +75,10 @@ export default function Home() {
   const handleRerankChange = (value: boolean) => {
     setRerank(value);
     localStorage.setItem("rerank", value.toString());
+  };
+
+  const handleResetSystemPrompt = () => {
+    setPendingSystemPrompt(DEFAULT_SYSTEM_PROMPT);
   };
 
   useEffect(() => {
@@ -106,22 +115,25 @@ export default function Home() {
           </div>
           <div className="flex flex-col">
             <p className="text-sm text-gray-500">
-              <Dialog open={open} onOpenChange={setOpen}>
-                <DialogTrigger onClick={() => setOpen(true)}>Edit system prompt</DialogTrigger>
+              <Dialog open={open} onOpenChange={handleOpenChange}>
+                <DialogTrigger>Edit system prompt</DialogTrigger>
                 <DialogContent>
                   <DialogTitle>Edit system prompt</DialogTitle>
                   <DialogDescription className="flex items-center justify-between">
                     Edit the system prompt for the Promptie.
-                    <button className="text-blue-500">Reset</button>
+                    <button className="text-blue-500" onClick={handleResetSystemPrompt}>Reset</button>
                   </DialogDescription>
                   <form onSubmit={handleSystemPromptSubmit}>
                     <textarea
                       name="systemPrompt"
                       className="w-full h-[600px] p-2 border-1 border-gray-300 rounded-md mb-4"
-                      defaultValue={systemPrompt}
+                      value={pendingSystemPrompt}
+                      onChange={(e) => setPendingSystemPrompt(e.target.value)}
                     />
                     <DialogFooter>
-                      <button className="text-gray-500 rounded-md p-2">Cancel</button>
+                      <DialogClose asChild>
+                        <button className="text-gray-500 rounded-md p-2">Cancel</button>
+                      </DialogClose>
                       <button className="bg-blue-500 text-white rounded-md p-2 px-6" type="submit">Save</button>
                     </DialogFooter>
                   </form>
