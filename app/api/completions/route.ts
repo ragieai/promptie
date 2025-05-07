@@ -1,10 +1,10 @@
+import { getRagieClient } from "@/lib/server/utils";
 import Anthropic from "@anthropic-ai/sdk";
 import Handlebars from "handlebars";
 import { NextRequest, NextResponse } from "next/server";
-import { Ragie } from "ragie";
 import { z } from "zod";
 
-const ragie = new Ragie({ auth: process.env.RAGIE_API_KEY });
+const ragie = getRagieClient();
 const anthropic = new Anthropic();
 
 const payloadSchema = z.object({

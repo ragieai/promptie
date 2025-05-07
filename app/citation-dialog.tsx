@@ -47,11 +47,23 @@ export default function CitationDialog({
   useEffect(() => {
     (async () => {
       const summary = await fetch(`/api/documents/${chunk.documentId}`);
+
+      if (!summary.ok) {
+        console.warn("Failed to fetch summary", summary);
+        return;
+      }
+
       const json = await summary.json();
       const parsed = summarySchema.parse(json);
       setSummary(parsed.summary);
     })();
   }, [chunk]);
+
+  const streamType  = chunk.links.self_video_stream
+    ? "video"
+    : chunk.links.self_audio_stream
+    ? "audio"
+    : null;
 
   return (
     <Dialog open={true} onOpenChange={handleOpenChange}>
@@ -63,7 +75,25 @@ export default function CitationDialog({
           {citation.cited_text}
         </blockquote>
 
-        {chunk.links?.self_audio_stream && (
+        {streamType === "video" && (
+          <div className="flex flex-col gap-2">
+            <div className="flex justify-between items-center">
+              <h2 className="font-bold">Video</h2>
+              <div className="text-sm text-gray-500">
+                ({formatSeconds(chunk.metadata.start_time)} -{" "}
+                {formatSeconds(chunk.metadata.end_time)})
+              </div>
+            </div>
+            <div className="flex justify-center">
+              <video
+                src={getProxyPath(partition, chunk.links.self_video_stream.href)}
+                controls
+              />
+            </div>
+          </div>
+        )}
+
+        {streamType === "audio" && (
           <div className="flex flex-col gap-2">
             <div className="flex justify-between items-center">
               <h2 className="font-bold">Audio</h2>
@@ -84,10 +114,14 @@ export default function CitationDialog({
           </div>
         )}
 
-        <h2 className="font-bold">Summary</h2>
-        <div className="text-sm text-gray-500 h-[500px] overflow-y-auto">
-          <Markdown className="markdown">{summary}</Markdown>
-        </div>
+        {summary && (
+          <>
+            <h2 className="font-bold">Summary</h2>
+            <div className="text-sm text-gray-500 h-[500px] overflow-y-auto">
+              <Markdown className="markdown">{summary}</Markdown>
+            </div>
+          </>
+        )}
       </DialogContent>
     </Dialog>
   );

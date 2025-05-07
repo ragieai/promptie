@@ -1,3 +1,4 @@
+import { RAGIE_API_BASE_URL } from "@/lib/server/settings";
 import { NextRequest } from "next/server";
 import { z } from "zod";
 
@@ -12,7 +13,7 @@ export async function GET(request: NextRequest) {
     url: request.nextUrl.searchParams.get("url"),
   });
 
-  if (!params.url.startsWith("https://api.ragie.ai")) {
+  if (!params.url.startsWith(RAGIE_API_BASE_URL)) {
     return new Response("Invalid URL", { status: 400 });
   }
 
