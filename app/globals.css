@@ -161,11 +161,82 @@
   }
 
   .markdown pre {
-    @apply bg-gray-900 text-gray-100 text-sm font-mono p-4 rounded overflow-x-auto my-4;
+    @apply bg-gray-900 text-gray-100 text-sm font-mono p-4 rounded overflow-x-auto my-4 border border-gray-700 dark:border-gray-600 shadow-sm;
   }
 
   .markdown code {
     @apply bg-gray-100 dark:bg-gray-800 text-sm font-mono px-1 py-0.5 rounded;
+  }
+
+  .markdown pre code {
+    @apply bg-transparent p-0 text-gray-100 dark:text-gray-100 border-none;
+  }
+
+  .markdown .code-header {
+    @apply bg-gray-800 text-gray-200 text-xs font-medium py-2 px-4 rounded-t flex justify-between items-center border-b border-gray-700;
+  }
+
+  .markdown .language-js::before,
+  .markdown .language-javascript::before {
+    content: "JavaScript";
+    @apply text-yellow-400 text-xs font-semibold absolute top-2 right-3;
+  }
+
+  .markdown .language-ts::before,
+  .markdown .language-typescript::before {
+    content: "TypeScript";
+    @apply text-blue-400 text-xs font-semibold absolute top-2 right-3;
+  }
+
+  .markdown .language-html::before {
+    content: "HTML";
+    @apply text-orange-400 text-xs font-semibold absolute top-2 right-3;
+  }
+
+  .markdown .language-css::before {
+    content: "CSS";
+    @apply text-blue-500 text-xs font-semibold absolute top-2 right-3;
+  }
+
+  .markdown .language-jsx::before {
+    content: "JSX";
+    @apply text-cyan-400 text-xs font-semibold absolute top-2 right-3;
+  }
+  
+  .markdown .language-tsx::before {
+    content: "TSX";
+    @apply text-cyan-500 text-xs font-semibold absolute top-2 right-3;
+  }
+
+  .markdown .language-json::before {
+    content: "JSON";
+    @apply text-green-400 text-xs font-semibold absolute top-2 right-3;
+  }
+
+  .markdown .language-bash::before,
+  .markdown .language-sh::before {
+    content: "Shell";
+    @apply text-gray-300 text-xs font-semibold absolute top-2 right-3;
+  }
+
+  .markdown pre {
+    @apply relative;
+  }
+
+  .markdown pre:hover .copy-button {
+    @apply opacity-100;
+  }
+
+  .markdown .copy-button {
+    @apply absolute top-2 right-2 bg-gray-700 hover:bg-gray-600 text-gray-200 text-xs py-1 px-2 rounded opacity-0 transition-opacity duration-200;
+  }
+
+  .markdown .highlight-line {
+    @apply bg-gray-700 dark:bg-gray-600 -mx-4 px-4 border-l-2 border-primary;
+  }
+
+  .markdown .line-number {
+    @apply text-gray-500 mr-4 select-none;
   }
 
   .markdown a {
