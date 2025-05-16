@@ -7,13 +7,15 @@ import { useEffect, useState } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { z } from "zod";
 import GeneratedText from "./generated-text";
-import { DEFAULT_SYSTEM_PROMPT } from "../lib/prompts";
+import { DEFAULT_SYSTEM_PROMPT, DEFAULT_TEMPERATURE } from "../lib/prompts";
 import { completionSchema } from "../lib/types";
 
 export default function Home() {
   const [completion, setCompletion] = useState<null | z.infer<typeof completionSchema>>(null);
   const [systemPrompt, setSystemPrompt] = useState<string>(DEFAULT_SYSTEM_PROMPT);
+  const [temperature, setTemperature] = useState<number>(DEFAULT_TEMPERATURE);
   const [pendingSystemPrompt, setPendingSystemPrompt] = useState<string>(systemPrompt);
+  const [pendingTemperature, setPendingTemperature] = useState<number>(temperature);
   const [partition, setPartition] = useState<string>("default");
   const [topK, setTopK] = useState<number>(6);
   const [rerank, setRerank] = useState<boolean>(false);
@@ -28,7 +30,7 @@ export default function Home() {
 
     const response = await fetch("/api/completions", {
       method: "POST",
-      body: JSON.stringify({ systemPrompt, message, partition, topK, rerank }),
+      body: JSON.stringify({ systemPrompt, temperature, message, partition, topK, rerank }),
     });
 
     try {
@@ -46,7 +48,9 @@ export default function Home() {
     e.preventDefault();
 
     setSystemPrompt(pendingSystemPrompt);
+    setTemperature(pendingTemperature);
     localStorage.setItem("systemPrompt", pendingSystemPrompt);
+    localStorage.setItem("temperature", pendingTemperature.toString());
     setOpen(false);
   };
 
@@ -54,6 +58,7 @@ export default function Home() {
     setOpen(open);
     if (open) {
       setPendingSystemPrompt(systemPrompt);
+      setPendingTemperature(temperature);
     }
   };
 
@@ -85,6 +90,10 @@ export default function Home() {
     const savedSystemPrompt = localStorage.getItem("systemPrompt");
     if (savedSystemPrompt) {
       setSystemPrompt(savedSystemPrompt);
+    }
+    const savedTemperature = localStorage.getItem("temperature");
+    if (savedTemperature) {
+      setTemperature(parseFloat(savedTemperature));
     }
     const savedMessage = localStorage.getItem("message");
     if (savedMessage) {
@@ -130,6 +139,8 @@ export default function Home() {
                       value={pendingSystemPrompt}
                       onChange={(e) => setPendingSystemPrompt(e.target.value)}
                     />
+                    <label htmlFor="temperature">Temperature:</label>
+                    <input type="range" name="temperature" min="0" max="1" step="0.01" value={pendingTemperature} onChange={(e) => setPendingTemperature(parseFloat(e.target.value))} />
                     <DialogFooter>
                       <DialogClose asChild>
                         <button className="text-gray-500 rounded-md p-2">Cancel</button>

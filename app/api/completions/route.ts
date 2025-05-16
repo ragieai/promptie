@@ -13,6 +13,7 @@ const payloadSchema = z.object({
   topK: z.number(),
   rerank: z.boolean(),
   systemPrompt: z.string(),
+  temperature: z.number(),
 });
 
 export async function POST(request: NextRequest) {
@@ -35,6 +36,7 @@ export async function POST(request: NextRequest) {
   const anthropicResponse = await anthropic.messages.create({
     model: "claude-3-7-sonnet-latest",
     max_tokens: 1000,
+    temperature: payload.temperature,
     messages: [
       {
         role: "user",
