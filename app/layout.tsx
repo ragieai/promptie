@@ -36,10 +36,10 @@ export default function RootLayout({
                   A tool for testing prompts and generations with Ragie
                 </p>
               </div>
-              <div className="flex gap-8">
+              {/* <div className="flex gap-8">
                 <Link href="/">Generate</Link>
                 <Link href="/search">Search</Link>
-              </div>
+              </div> */}
           </header>
           <main className="flex flex-col w-full h-full">
             {children}
