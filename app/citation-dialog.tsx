@@ -54,58 +54,60 @@ export default function CitationDialog({
       <DialogContent>
         <DialogTitle>{citation.document_title}</DialogTitle>
 
-        <h2 className="font-bold">Cited text</h2>
-        <blockquote className="text-sm text-gray-500 border-l-2 border-gray-500 pl-4">
-          {citation.cited_text}
-        </blockquote>
+        <div className="max-h-[80vh] overflow-y-auto">
+          <h2 className="font-bold">Cited text</h2>
+          <blockquote className="text-sm text-gray-500 border-l-2 border-gray-500 pl-4">
+            {citation.cited_text}
+          </blockquote>
 
-        {streamType === "video" && (
-          <div className="flex flex-col gap-2">
-            <div className="flex justify-between items-center">
-              <h2 className="font-bold">Video</h2>
-              <div className="text-sm text-gray-500">
-                ({formatSeconds(chunk.metadata.start_time)} -{" "}
-                {formatSeconds(chunk.metadata.end_time)})
+          {streamType === "video" && (
+            <div className="flex flex-col gap-2">
+              <div className="flex justify-between items-center">
+                <h2 className="font-bold">Video</h2>
+                <div className="text-sm text-gray-500">
+                  ({formatSeconds(chunk.metadata.start_time)} -{" "}
+                  {formatSeconds(chunk.metadata.end_time)})
+                </div>
+              </div>
+              <div className="flex justify-center">
+                <video
+                  src={getProxyPath(partition, chunk.links.self_video_stream.href)}
+                  controls
+                />
               </div>
             </div>
-            <div className="flex justify-center">
-              <video
-                src={getProxyPath(partition, chunk.links.self_video_stream.href)}
-                controls
-              />
-            </div>
-          </div>
-        )}
+          )}
 
-        {streamType === "audio" && (
-          <div className="flex flex-col gap-2">
-            <div className="flex justify-between items-center">
-              <h2 className="font-bold">Audio</h2>
-              <div className="text-sm text-gray-500">
-                ({formatSeconds(chunk.metadata.start_time)} -{" "}
-                {formatSeconds(chunk.metadata.end_time)})
+          {streamType === "audio" && (
+            <div className="flex flex-col gap-2">
+              <div className="flex justify-between items-center">
+                <h2 className="font-bold">Audio</h2>
+                <div className="text-sm text-gray-500">
+                  ({formatSeconds(chunk.metadata.start_time)} -{" "}
+                  {formatSeconds(chunk.metadata.end_time)})
+                </div>
+              </div>
+              <div className="flex justify-center">
+                <audio
+                  src={getProxyPath(
+                    partition,
+                    chunk.links.self_audio_stream.href
+                  )}
+                  controls
+                />
               </div>
             </div>
-            <div className="flex justify-center">
-              <audio
-                src={getProxyPath(
-                  partition,
-                  chunk.links.self_audio_stream.href
-                )}
-                controls
-              />
-            </div>
-          </div>
-        )}
+          )}
 
-        {summary && (
-          <>
-            <h2 className="font-bold">Summary</h2>
-            <div className="text-sm text-gray-500 h-[500px] overflow-y-auto">
-              <Markdown className="markdown">{summary}</Markdown>
-            </div>
-          </>
-        )}
+          {summary && (
+            <>
+              <h2 className="font-bold">Summary</h2>
+              <div className="text-sm text-gray-500">
+                <Markdown className="markdown">{summary}</Markdown>
+              </div>
+            </>
+          )}
+        </div>
       </DialogContent>
     </Dialog>
   );
