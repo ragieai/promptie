@@ -1,9 +1,10 @@
 import { z } from "zod";
-import { completionSchema } from "../lib/types";
+import { Chunk, completionSchema } from "../lib/types";
 import Markdown from "react-markdown";
 import { useState } from "react";
 import { Citation } from "../lib/types";
 import CitationDialog from "./citation-dialog";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 interface GeneratedTextProps {
   completion: z.infer<typeof completionSchema>
@@ -66,11 +67,35 @@ export default function GeneratedText({completion, partition}: GeneratedTextProp
         }}>
         {content}
       </Markdown>
-      <div className="text-xs text-gray-500">
-        {citations.map((citation: Citation, i: number) => {
-          return <div key={i}>[{i}] {citation.document_title}: {citation.cited_text}</div>
-        })}
-      </div>
+      <Tabs defaultValue="citations" className="flex flex-col gap-2">
+        <TabsList className="flex w-full justify-center rounded-md bg-muted p-1 text-muted-foreground">
+          <TabsTrigger value="citations">Citations</TabsTrigger>
+          <TabsTrigger value="chunks">Chunks</TabsTrigger>
+        </TabsList>
+        <TabsContent value="citations">
+          <div className="text-xs text-gray-500">
+            {citations.map((citation: Citation, i: number) => {
+              return <div key={i}>[{i}] {citation.document_title}: {citation.cited_text}</div>
+            })}
+          </div>
+        </TabsContent>
+        <TabsContent value="chunks">
+          <div className="text-xs text-gray-500">
+            {chunks.map((chunk:Chunk) => {
+              return (
+                <div key={chunk.id}>
+                  <span className="font-bold">
+                  (score {chunk.score.toFixed(3)}){" "}
+                    {chunk.documentName} 
+                  </span>{" "}
+                  ({chunk.metadata?.start_time}-
+                    {chunk.metadata?.end_time}): {chunk.text}
+                </div>
+              );
+            })}
+          </div>
+        </TabsContent>
+      </Tabs>
       {selectedCitation && (
         <CitationDialog
           partition={partition}
