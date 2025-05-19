@@ -9,7 +9,6 @@ import { z } from "zod";
 import GeneratedText from "./generated-text";
 import { DEFAULT_SYSTEM_PROMPT } from "../lib/prompts";
 import { completionSchema } from "../lib/types";
-import Link from "next/link";
 
 export default function Home() {
   const [completion, setCompletion] = useState<null | z.infer<typeof completionSchema>>(null);
