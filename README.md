@@ -6,9 +6,6 @@ A tool for testing prompts and generations with Ragie. This is a Next.js applica
 <img width="302" alt="image" src="https://github.com/user-attachments/assets/29e99518-45be-4214-a48a-4d06440d00b7" />
 <img width="302" alt="image" src="https://github.com/user-attachments/assets/e19f0ce5-64f8-4e62-bf1a-7406be16e23e" />
 
-
-
-
 ## Features
 
 - Interactive prompt testing interface
@@ -30,12 +27,14 @@ A tool for testing prompts and generations with Ragie. This is a Next.js applica
 ## Installation
 
 1. Clone the repository
+
 ```bash
 git clone https://github.com/yourusername/promptie.git
 cd promptie
 ```
 
 2. Install dependencies
+
 ```bash
 npm install
 # or
@@ -43,6 +42,7 @@ yarn install
 ```
 
 3. Set up environment variables
+
    - Create a `.env` file in the root directory by copying `.env.example`.
    - Add your API keys and configure the LLM provider as shown below. Refer to the comments in the `.env.example` file for more details.
 
@@ -50,29 +50,15 @@ yarn install
    # Your Ragie API key (Get one at https://secure.ragie.ai)
    RAGIE_API_KEY=your_ragie_api_key_here
 
-   # --- LLM Provider Configuration ---
-
-   # LLM_PROVIDER: Choose your LLM provider.
-   # Options: "anthropic" or "openrouter".
-   # If not set, the application defaults to "anthropic".
-   # Example: LLM_PROVIDER=openrouter
-   LLM_PROVIDER=anthropic
-
    # ANTHROPIC_API_KEY: Your Anthropic API key.
-   # Required if LLM_PROVIDER is "anthropic" or if LLM_PROVIDER is not set.
    # Get one from https://www.anthropic.com/
    ANTHROPIC_API_KEY=your_anthropic_api_key_here
 
    # OPENROUTER_API_KEY: Your OpenRouter API key.
-   # Required if LLM_PROVIDER is set to "openrouter".
    # Get one from https://openrouter.ai/
    OPENROUTER_API_KEY=your_openrouter_api_key_here
-
-   # OPENROUTER_MODEL: The model to use with OpenRouter.
-   # Required if LLM_PROVIDER is set to "openrouter".
-   # Examples: "google/gemini-pro-1.5-flash", "openai/gpt-4-turbo", "mistralai/mistral-7b-instruct"
-   # Refer to OpenRouter documentation for a full list of available models and their identifiers.
-   OPENROUTER_MODEL=google/gemini-pro-1.5-flash
+   # required for the frontend to detect OpenRouter support and show relevant UI:
+   NEXT_PUBLIC_OPENROUTER_API_KEY=$OPENROUTER_API_KEY
    ```
 
 ## Development
