@@ -188,6 +188,7 @@ export default function Home() {
                       value={pendingSystemPrompt}
                       onChange={(e) => setPendingSystemPrompt(e.target.value)}
                     />
+                    {process.env.NEXT_PUBLIC_OPENROUTER_API_KEY && (
                     <AccordionPrimitive.Root type="single" collapsible>
                       <AccordionPrimitive.Item
                         value="advanced"
@@ -217,23 +218,26 @@ export default function Home() {
                               <option value="openrouter">OpenRouter</option>
                             </select>
                           </div>
-                          <div>
-                            <label htmlFor="openrouterModel" className="mr-3">
-                              OpenRouter Model:
-                            </label>
-                            <input
-                              type="text"
-                              name="openrouterModel"
-                              className="border-1 border-gray-300 rounded-md p-1"
-                              value={pendingOpenrouterModel}
-                              onChange={(e) =>
-                                setPendingOpenrouterModel(e.target.value)
-                              }
-                            />
-                          </div>
+                          {pendingProvider === "openrouter" && (
+                            <div>
+                              <label htmlFor="openrouterModel" className="mr-3">
+                                OpenRouter Model:
+                              </label>
+                              <input
+                                type="text"
+                                name="openrouterModel"
+                                className="border-1 border-gray-300 rounded-md p-1"
+                                value={pendingOpenrouterModel}
+                                onChange={(e) =>
+                                  setPendingOpenrouterModel(e.target.value)
+                                }
+                              />
+                            </div>
+                          )}
                         </AccordionPrimitive.Content>
                       </AccordionPrimitive.Item>
                     </AccordionPrimitive.Root>
+                    )}
                     <DialogFooter>
                       <DialogClose asChild>
                         <button className="text-gray-500 rounded-md p-2">Cancel</button>
