@@ -24,6 +24,8 @@ export default function Home() {
   );
   const [pendingOpenrouterModel, setPendingOpenrouterModel] =
     useState<string>(openrouterModel);
+  const [provider, setProvider] = useState<string>("anthropic");
+  const [pendingProvider, setPendingProvider] = useState<string>(provider);
   const [partition, setPartition] = useState<string>("default");
   const [topK, setTopK] = useState<number>(6);
   const [rerank, setRerank] = useState<boolean>(false);
@@ -38,7 +40,7 @@ export default function Home() {
 
     const response = await fetch("/api/completions", {
       method: "POST",
-      body: JSON.stringify({ systemPrompt, message, partition, topK, rerank }),
+      body: JSON.stringify({ systemPrompt, message, partition, topK, rerank, provider, openrouterModel }),
     });
 
     try {
@@ -58,6 +60,8 @@ export default function Home() {
 
     setSystemPrompt(pendingSystemPrompt);
     localStorage.setItem("systemPrompt", pendingSystemPrompt);
+    setProvider(pendingProvider);
+    localStorage.setItem("provider", pendingProvider);
     setOpenrouterModel(pendingOpenrouterModel);
     localStorage.setItem("openrouterModel", pendingOpenrouterModel);
     setOpen(false);
@@ -95,6 +99,10 @@ export default function Home() {
   };
 
   useEffect(() => {
+    const savedProvider = localStorage.getItem("provider");
+    if (savedProvider) {
+      setProvider(savedProvider);
+    }
     const savedOpenrouterModel = localStorage.getItem("openrouterModel");
     if (savedOpenrouterModel) {
       setOpenrouterModel(savedOpenrouterModel);
@@ -193,18 +201,36 @@ export default function Home() {
                           />
                         </AccordionPrimitive.Trigger>
                         <AccordionPrimitive.Content>
-                          <label htmlFor="openrouterModel" className="mr-3">
-                            OpenRouter Model:
-                          </label>
-                          <input
-                            type="text"
-                            name="openrouterModel"
-                            className="border-1 border-gray-300 rounded-md p-1"
-                            value={pendingOpenrouterModel}
-                            onChange={(e) =>
-                              setPendingOpenrouterModel(e.target.value)
-                            }
-                          />
+                        <div>
+                            <label htmlFor="openrouterModel" className="mr-3">
+                              Provider:
+                            </label>
+                            <select
+                              name="provider"
+                              className="border-1 border-gray-300 rounded-md p-1"
+                              value={pendingProvider}
+                              onChange={(e) =>
+                                setPendingProvider(e.target.value)
+                              }
+                            >
+                              <option value="anthropic">Anthropic</option>
+                              <option value="openrouter">OpenRouter</option>
+                            </select>
+                          </div>
+                          <div>
+                            <label htmlFor="openrouterModel" className="mr-3">
+                              OpenRouter Model:
+                            </label>
+                            <input
+                              type="text"
+                              name="openrouterModel"
+                              className="border-1 border-gray-300 rounded-md p-1"
+                              value={pendingOpenrouterModel}
+                              onChange={(e) =>
+                                setPendingOpenrouterModel(e.target.value)
+                              }
+                            />
+                          </div>
                         </AccordionPrimitive.Content>
                       </AccordionPrimitive.Item>
                     </AccordionPrimitive.Root>

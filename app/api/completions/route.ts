@@ -1,8 +1,6 @@
 import { getRagieClient } from "@/lib/server/utils";
 import {
-  LLM_PROVIDER,
   OPENROUTER_API_KEY,
-  OPENROUTER_MODEL,
 } from "@/lib/server/settings";
 import Anthropic from "@anthropic-ai/sdk";
 import Handlebars from "handlebars";
@@ -14,24 +12,14 @@ import { createOpenRouter } from "@openrouter/ai-sdk-provider";
 const ragie = getRagieClient();
 const anthropic = new Anthropic();
 
-let openrouter: ReturnType<typeof createOpenRouter> | undefined;
-if (LLM_PROVIDER === "openrouter") {
-  if (!OPENROUTER_API_KEY || !OPENROUTER_MODEL) {
-    throw new Error(
-      "OpenRouter API key or model not set for LLM_PROVIDER 'openrouter'"
-    );
-  }
-  openrouter = createOpenRouter({
-    apiKey: OPENROUTER_API_KEY,
-  });
-}
-
 const payloadSchema = z.object({
   message: z.string(),
   partition: z.string(),
   topK: z.number(),
   rerank: z.boolean(),
   systemPrompt: z.string(),
+  provider: z.enum(["anthropic", "openrouter"]),
+  openrouterModel: z.string(),
 });
 
 export async function POST(request: NextRequest) {
@@ -53,7 +41,10 @@ export async function POST(request: NextRequest) {
 
   let modelResponse;
 
-  if (LLM_PROVIDER === "openrouter" && openrouter) {
+  if (payload.provider === "openrouter" && OPENROUTER_API_KEY) {
+    const openrouter = createOpenRouter({
+      apiKey: OPENROUTER_API_KEY,
+    });
     const documentContext = ragieResponse.scoredChunks
       .map((chunk) => `Document: ${chunk.documentName}\n${chunk.text}`)
       .join("\n\n");
@@ -68,7 +59,7 @@ export async function POST(request: NextRequest) {
 
     try {
       const { text, usage } = await generateText({
-        model: openrouter(OPENROUTER_MODEL!),
+        model: openrouter(payload.openrouterModel!),
         messages: messages,
         maxTokens: 1000,
       });
@@ -79,7 +70,7 @@ export async function POST(request: NextRequest) {
         id: `openrouter-${Date.now()}`, // Placeholder ID
         type: "message",
         role: "assistant",
-        model: OPENROUTER_MODEL,
+        model: payload.openrouterModel,
         content: [{ type: "text", text: text }],
         usage: {
           input_tokens: usage.promptTokens,
