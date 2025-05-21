@@ -8,21 +8,21 @@ import Anthropic from "@anthropic-ai/sdk";
 import Handlebars from "handlebars";
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
-import { createOpenAI, generateText } from "ai/core";
+import { generateText } from "ai";
+import { createOpenRouter } from "@openrouter/ai-sdk-provider";
 
 const ragie = getRagieClient();
 const anthropic = new Anthropic();
 
-let openrouter: ReturnType<typeof createOpenAI> | undefined;
+let openrouter: ReturnType<typeof createOpenRouter> | undefined;
 if (LLM_PROVIDER === "openrouter") {
   if (!OPENROUTER_API_KEY || !OPENROUTER_MODEL) {
     throw new Error(
       "OpenRouter API key or model not set for LLM_PROVIDER 'openrouter'"
     );
   }
-  openrouter = createOpenAI({
+  openrouter = createOpenRouter({
     apiKey: OPENROUTER_API_KEY,
-    baseURL: "https://openrouter.ai/api/v1",
   });
 }
 
@@ -59,29 +59,32 @@ export async function POST(request: NextRequest) {
       .join("\n\n");
 
     const messages = [
-      { role: "system", content: systemPromptContent },
+      { role: "system" as const, content: systemPromptContent },
       {
-        role: "user",
+        role: "user" as const,
         content: `${documentContext}\n\nUser Query: ${payload.message}`,
       },
     ];
 
     try {
-      const { text } = await generateText({
+      const { text, usage } = await generateText({
         model: openrouter(OPENROUTER_MODEL!),
         messages: messages,
         maxTokens: 1000,
       });
-      // Adapt the OpenRouter response to a structure similar to Anthropic's
-      // This is a simplified adaptation. You might need to adjust based on actual OpenRouter response
-      // and how your frontend consumes it.
+      /** Don't directly set `modelResponse` to the OpenRouter response, as the
+       * frontend expect a structure like that returned from an Anthropic call.
+       * */
       modelResponse = {
         id: `openrouter-${Date.now()}`, // Placeholder ID
         type: "message",
         role: "assistant",
         model: OPENROUTER_MODEL,
         content: [{ type: "text", text: text }],
-        usage: { input_tokens: 0, output_tokens: 0 }, // Placeholder usage
+        usage: {
+          input_tokens: usage.promptTokens,
+          output_tokens: usage.completionTokens,
+        }, // Placeholder usage
       };
     } catch (error) {
       console.error("OpenRouter API error:", error);
@@ -93,7 +96,7 @@ export async function POST(request: NextRequest) {
   } else {
     // Default to Anthropic
     const anthropicResponse = await anthropic.messages.create({
-      model: "claude-3-opus-20240229", // Assuming you want to keep a specific model or make it configurable
+      model: "claude-3-7-sonnet-latest",
       max_tokens: 1000,
       messages: [
         {
@@ -103,7 +106,7 @@ export async function POST(request: NextRequest) {
         {
           role: "user", // Or assistant, depending on how you structure conversation for Anthropic
           content: ragieResponse.scoredChunks.map((chunk) => ({
-            type: "document" as const, // Ensure type is correctly inferred
+            type: "document" as const,
             source: {
               type: "text" as const,
               media_type: "text/plain",
