@@ -3,17 +3,24 @@
 import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { useEffect, useState } from "react";
 
-
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { z } from "zod";
 import GeneratedText from "./generated-text";
-import { DEFAULT_SYSTEM_PROMPT } from "../lib/prompts";
+import {
+  DEFAULT_OPENROUTER_MODEL,
+  DEFAULT_SYSTEM_PROMPT,
+} from "../lib/prompts";
 import { completionSchema } from "../lib/types";
 
 export default function Home() {
   const [completion, setCompletion] = useState<null | z.infer<typeof completionSchema>>(null);
   const [systemPrompt, setSystemPrompt] = useState<string>(DEFAULT_SYSTEM_PROMPT);
   const [pendingSystemPrompt, setPendingSystemPrompt] = useState<string>(systemPrompt);
+  const [openrouterModel, setOpenrouterModel] = useState<string>(
+    DEFAULT_OPENROUTER_MODEL
+  );
+  const [pendingOpenrouterModel, setPendingOpenrouterModel] =
+    useState<string>(openrouterModel);
   const [partition, setPartition] = useState<string>("default");
   const [topK, setTopK] = useState<number>(6);
   const [rerank, setRerank] = useState<boolean>(false);
@@ -33,8 +40,8 @@ export default function Home() {
 
     try {
       const json = await response.json();
-      const completion = completionSchema.parse(json)
-      setCompletion(completion)
+      const completion = completionSchema.parse(json);
+      setCompletion(completion);
     } catch (error) {
       console.error(error);
     } finally {
@@ -44,9 +51,12 @@ export default function Home() {
 
   const handleSystemPromptSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    e.stopPropagation();
 
     setSystemPrompt(pendingSystemPrompt);
     localStorage.setItem("systemPrompt", pendingSystemPrompt);
+    setOpenrouterModel(pendingOpenrouterModel);
+    localStorage.setItem("openrouterModel", pendingOpenrouterModel);
     setOpen(false);
   };
 
@@ -82,6 +92,10 @@ export default function Home() {
   };
 
   useEffect(() => {
+    const savedOpenrouterModel = localStorage.getItem("openrouterModel");
+    if (savedOpenrouterModel) {
+      setOpenrouterModel(savedOpenrouterModel);
+    }
     const savedSystemPrompt = localStorage.getItem("systemPrompt");
     if (savedSystemPrompt) {
       setSystemPrompt(savedSystemPrompt);
@@ -157,6 +171,21 @@ export default function Home() {
                     <button className="text-blue-500" onClick={handleResetSystemPrompt}>Reset</button>
                   </DialogDescription>
                   <form onSubmit={handleSystemPromptSubmit}>
+                    {process.env.NEXT_PUBLIC_LLM_PROVIDER === "openrouter" && (
+                      <>
+                        <label htmlFor="openrouterModel" className="mr-3">
+                          OpenRouter Model:
+                        </label>
+                        <input
+                          type="text"
+                          name="openrouterModel"
+                          value={pendingOpenrouterModel}
+                          onChange={(e) =>
+                            setPendingOpenrouterModel(e.target.value)
+                          }
+                        />
+                      </>
+                    )}
                     <textarea
                       name="systemPrompt"
                       className="w-full h-[600px] p-2 border-1 border-gray-300 rounded-md mb-4"
