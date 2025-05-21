@@ -4,6 +4,9 @@ import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, Di
 import { useEffect, useState } from "react";
 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import * as AccordionPrimitive from "@radix-ui/react-accordion";
+import { ChevronDownIcon } from "@radix-ui/react-icons";
+
 import { z } from "zod";
 import GeneratedText from "./generated-text";
 import {
@@ -171,27 +174,40 @@ export default function Home() {
                     <button className="text-blue-500" onClick={handleResetSystemPrompt}>Reset</button>
                   </DialogDescription>
                   <form onSubmit={handleSystemPromptSubmit}>
-                    {process.env.NEXT_PUBLIC_LLM_PROVIDER === "openrouter" && (
-                      <>
-                        <label htmlFor="openrouterModel" className="mr-3">
-                          OpenRouter Model:
-                        </label>
-                        <input
-                          type="text"
-                          name="openrouterModel"
-                          value={pendingOpenrouterModel}
-                          onChange={(e) =>
-                            setPendingOpenrouterModel(e.target.value)
-                          }
-                        />
-                      </>
-                    )}
                     <textarea
                       name="systemPrompt"
                       className="w-full h-[600px] p-2 border-1 border-gray-300 rounded-md mb-4"
                       value={pendingSystemPrompt}
                       onChange={(e) => setPendingSystemPrompt(e.target.value)}
                     />
+                    <AccordionPrimitive.Root type="single" collapsible>
+                      <AccordionPrimitive.Item
+                        value="advanced"
+                        className="border-1 border-gray-300 rounded-md p-2"
+                      >
+                        <AccordionPrimitive.Trigger className="group flex items-center justify-between gap-2">
+                          <span>Advanced</span>
+                          <ChevronDownIcon
+                            className="group-data-[state=open]:rotate-180"
+                            aria-hidden
+                          />
+                        </AccordionPrimitive.Trigger>
+                        <AccordionPrimitive.Content>
+                          <label htmlFor="openrouterModel" className="mr-3">
+                            OpenRouter Model:
+                          </label>
+                          <input
+                            type="text"
+                            name="openrouterModel"
+                            className="border-1 border-gray-300 rounded-md p-1"
+                            value={pendingOpenrouterModel}
+                            onChange={(e) =>
+                              setPendingOpenrouterModel(e.target.value)
+                            }
+                          />
+                        </AccordionPrimitive.Content>
+                      </AccordionPrimitive.Item>
+                    </AccordionPrimitive.Root>
                     <DialogFooter>
                       <DialogClose asChild>
                         <button className="text-gray-500 rounded-md p-2">Cancel</button>
@@ -206,8 +222,9 @@ export default function Home() {
         </div>
         <button
           type="submit"
-          className="bg-blue-500 text-white rounded-md p-2 px-6 self-start">
-            Send
+          className="bg-blue-500 text-white rounded-md p-2 px-6 self-start"
+        >
+          Send
         </button>
       </form>
       {!completion && !isLoading && (
@@ -225,16 +242,8 @@ export default function Home() {
       {completion && !isLoading && (
         <Tabs defaultValue="message" className="flex flex-col h-full mt-8">
           <TabsList className="w-full justify-start bg-transparent gap-2">
-            <TabsTrigger
-              value="message"
-            >
-              Message
-            </TabsTrigger>
-            <TabsTrigger
-              value="chunks"
-            >
-              Chunks
-            </TabsTrigger>
+            <TabsTrigger value="message">Message</TabsTrigger>
+            <TabsTrigger value="chunks">Chunks</TabsTrigger>
           </TabsList>
           <TabsContent value="message" className="flex-1">
             <GeneratedText completion={completion} partition={partition} />
