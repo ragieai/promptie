@@ -1,5 +1,5 @@
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import Markdown from "react-markdown";
 import { z } from "zod";
 import { Citation } from "../lib/types";
@@ -32,8 +32,7 @@ export default function CitationDialog({
     }
   };
 
-  useEffect(() => {
-    (async () => {
+  const loadSummary = useCallback(async () => {
       const summary = await fetch(`/api/documents/${chunk.documentId}`);
 
       if (!summary.ok) {
@@ -44,8 +43,9 @@ export default function CitationDialog({
       const json = await summary.json();
       const parsed = summarySchema.parse(json);
       setSummary(parsed.summary);
-    })();
-  }, [chunk]);
+    },
+    [chunk]
+  );
 
   const streamType = getStreamType(chunk);
 
@@ -99,13 +99,29 @@ export default function CitationDialog({
             </div>
           )}
 
+          <div className="flex gap-2 pt-4">
+            {!summary && (
+              <button className="border border-gray-500 rounded-md px-2 py-1 text-sm text-gray-500" onClick={() => loadSummary()}>
+                Show document summary
+              </button>
+            )}
+            {summary && (
+              <button
+                className="border border-gray-500 rounded-md px-2 py-1 text-sm text-gray-500"
+                onClick={() => setSummary(null)}
+              >
+                Hide document summary
+              </button>
+            )}
+          </div>
+
           {summary && (
-            <>
+            <div className="pt-4">
               <h2 className="font-bold">Summary</h2>
               <div className="text-sm text-gray-500">
                 <Markdown className="markdown">{summary}</Markdown>
               </div>
-            </>
+            </div>
           )}
         </div>
       </DialogContent>
