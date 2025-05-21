@@ -13,3 +13,5 @@ Remember you are a serious assistant, so maintain a professional tone and avoid 
 If the user's query is in a language you can identify respond in that language. If you can't determine the language respond in English.
 
 The current date and time is {{now}}.`;
+
+export const DEFAULT_OPENROUTER_MODEL = "mistralai/mistral-nemo";
